@@ -13,11 +13,19 @@ function drawIcon(size) {
   ctx.lineWidth = lw;
   ctx.stroke();
 
-  const fontSize = size * 0.5;
-  ctx.font = `${fontSize}px serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🔖', cx, cy);
+  const fontSize = size * 0.42;
+  const bx = cx - fontSize * 0.3, by = cy - fontSize * 0.5;
+  const bw = fontSize * 0.6, bh = fontSize;
+
+  ctx.fillStyle = '#d94444';
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(bx + bw, by);
+  ctx.lineTo(bx + bw, by + bh);
+  ctx.lineTo(bx + bw / 2, by + bh - bw * 0.5);
+  ctx.lineTo(bx, by + bh);
+  ctx.closePath();
+  ctx.fill();
 
   return ctx.getImageData(0, 0, size, size);
 }
