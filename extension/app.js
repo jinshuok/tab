@@ -185,7 +185,92 @@ async function refresh() {
   checkAllDupes();
 }
 
+// 双击处理：检测双击激活标签
+let lastClickTime = 0;
+let lastClickTarget = null;
+let isDoubleClick = false;
+
 document.addEventListener('click', async (e) => {
+  const tabRow = e.target.closest('.tab-row');
+  if (!tabRow) return;
+  
+  // 如果是 checkbox 或 close 按钮，不处理
+  if (e.target.closest('.tab-checkbox') || e.target.closest('.tab-close')) {
+    return;
+  }
+  
+  const now = Date.now();
+  const isSameTarget = lastClickTarget === tabRow;
+  const isDouble = isSameTarget && (now - lastClickTime < 300);
+  
+  lastClickTime = now;
+  lastClickTarget = tabRow;
+  
+  if (isDouble) {
+    // 是双击，标记并执行激活
+    isDoubleClick = true;
+    e.preventDefault();
+    e.stopPropagation();
+    await handleDoubleClick(tabRow);
+    // 重置状态
+    setTimeout(() => {
+      isDoubleClick = false;
+      lastClickTime = 0;
+      lastClickTarget = null;
+    }, 50);
+    return;
+  }
+  
+  // 延迟执行单击逻辑，等待是否为双击的判断
+  setTimeout(async () => {
+    // 如果已经被标记为双击，则不执行单击
+    if (isDoubleClick) return;
+    
+    // 执行单击选中
+    const checkbox = tabRow.querySelector('.tab-checkbox');
+    if (checkbox) {
+      checkbox.checked = !checkbox.checked;
+      const card = tabRow.closest('.card');
+      if (card) {
+        const footer = card.querySelector('.card-footer');
+        const anyChecked = card.querySelectorAll('.tab-checkbox:checked').length > 0;
+        if (footer) footer.classList.toggle('show', anyChecked);
+      }
+    }
+  }, 300);
+});
+
+async function handleDoubleClick(tabRow) {
+  const tabId = parseInt(tabRow.dataset.tabId);
+  if (!tabId) return;
+  
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    if (!tab) {
+      showToast('标签页不存在');
+      return;
+    }
+    
+    // 激活标签页
+    await chrome.tabs.update(tabId, { active: true });
+    
+    // 聚焦窗口
+    if (tab.windowId) {
+      await chrome.windows.update(tab.windowId, { focused: true });
+    }
+  } catch (err) {
+    console.error('Failed to activate tab:', err);
+    showToast('无法激活此标签页');
+  }
+}
+
+document.addEventListener('click', async (e) => {
+  // 注意：tab-row 的点击已在上面处理，这里只处理其他元素
+  const tabRow = e.target.closest('.tab-row');
+  
+  // 如果点击在 tab-row 内，已由上方处理器处理
+  if (tabRow) return;
+
   const act = e.target.closest('[data-action]');
   if (!act) {
     const cb = e.target.closest('.tab-checkbox');
