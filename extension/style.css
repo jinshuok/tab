@@ -21,11 +21,13 @@ body {
 
 /* Header */
 header {
+  display: flex; justify-content: space-between; align-items: flex-start;
   margin-bottom: 36px; padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
 }
 header h1 { font-size: 24px; font-weight: 600; }
 header .date { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
 .sp-view-btn {
   font-family: inherit; font-size: 11px; font-weight: 500;
@@ -68,6 +70,14 @@ header .date { font-size: 13px; color: var(--muted); margin-top: 2px; }
 }
 .section-line { flex: 1; height: 1px; background: var(--border); }
 .section-count { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.refresh-btn {
+  font-family: inherit; font-size: 16px; font-weight: 600;
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: none; color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.refresh-btn:hover { background: #f0f0f0; color: var(--ink); }
 .close-all-link {
   font-family: inherit; font-size: 11px; color: var(--red);
   background: none; border: none; cursor: pointer; margin-left: 8px;

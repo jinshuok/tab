@@ -16,8 +16,16 @@ function getDateDisplay() {
 }
 
 function getDomain(url) {
-  try { return new URL(url).hostname || url; }
-  catch { return url; }
+  const u = url || '';
+  if (u.startsWith('chrome://')) return 'chrome://';
+  if (u.startsWith('edge://')) return 'edge://';
+  if (u.startsWith('brave://')) return 'brave://';
+  if (u.startsWith('chrome-extension://') || u.startsWith('moz-extension://')) {
+    try { return new URL(u).hostname; }
+    catch { return 'extension://'; }
+  }
+  try { return new URL(u).hostname || u; }
+  catch { return u; }
 }
 
 function tabLabel(tab) {
@@ -28,6 +36,9 @@ function tabLabel(tab) {
 }
 
 function domainLabel(hostname) {
+  if (hostname === 'chrome://') return 'Chrome';
+  if (hostname === 'edge://') return 'Edge';
+  if (hostname === 'brave://') return 'Brave';
   return hostname.replace(/^www\./, '');
 }
 
@@ -82,9 +93,9 @@ function renderCard(domain, tabs) {
       </div>
       <div class="tab-list">${rows}</div>
       <div class="card-footer">
-        <button class="card-sel-all" data-card-id="${cardId}">All</button>
-        <button class="card-sel-inv" data-card-id="${cardId}">Invert</button>
-        <button class="card-close-checked" data-card-id="${cardId}">Close checked</button>
+        <button class="card-sel-all" data-action="sel-all" data-card-id="${cardId}">All</button>
+        <button class="card-sel-inv" data-action="sel-inv" data-card-id="${cardId}">Invert</button>
+        <button class="card-close-checked" data-action="close-checked" data-card-id="${cardId}">Close checked</button>
       </div>
     </div>`;
 }
@@ -249,6 +260,8 @@ if (spBtn) {
     chrome.runtime.sendMessage({ type: 'open-sidepanel' });
   });
 }
+
+document.getElementById('refreshBtn')?.addEventListener('click', () => refresh());
 
 document.getElementById('spClose')?.addEventListener('click', () => window.close());
 document.getElementById('openPageView')?.addEventListener('click', () => {
